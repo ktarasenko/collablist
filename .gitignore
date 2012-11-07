@@ -16,6 +16,7 @@ local.properties
 .settings/
 .loadpath
 
+
 # External tool builders
 .externalToolBuilders/
 
@@ -164,3 +165,10 @@ pip-log.txt
 
 #compiled lift  stuff
 target
+*.iws
+
+*.ipr
+
+*.iml
+
+*.db
