@@ -1,15 +1,24 @@
 <lift:surround with="default" at="content">
-		<h2>Welcome to your project!</h2>
-		<p>
-    <div class="ListEdit.list">
-        <ul>
-            <il id="entry">ffff</il>
-        </ul>
-    </div>
 
+    <lift:ListEdit.addEntry form="post">
+            <div id="entryform" style="height: 120px">
+                <table>
+                    <tr>
+                        <td><e:text />  </td>
+                        <td><button>Add</button></td>
+                    </tr>
+                </table>
+            </div>
+    </lift:ListEdit.addEntry>
 
+    <lift:ListEdit.showList>
+        <list:entry>
+            <tr>
+                <td><le:text /></td>
+                <td><le:delete /></td>
+            </tr>
+        </list:entry>
+    </lift:ListEdit.showList>
 
-      <lift:listEdit.form form="post"/>
-    </p>
 </lift:surround>
 

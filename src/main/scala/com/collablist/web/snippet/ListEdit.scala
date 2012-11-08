@@ -2,29 +2,66 @@ package com.collablist.web.snippet
 
 import net.liftweb.util.Helpers._
 import com.collablist.web.model.ListEntry
-import net.liftweb.common.{Logger, Full}
-import bootstrap.liftweb.Boot
-import net.liftweb.http.S
-import xml.NodeSeq
+import net.liftweb.common.{Empty, Logger, Full}
+import net.liftweb.http.{StatefulSnippet, SHtml, S}
+import xml.{Text, NodeSeq, Node}
+import java.util.Date
 
-class ListEdit {
-  val logger = Logger(classOf[Boot])
+class ListEdit extends StatefulSnippet  {
+  val logger = Logger(classOf[ListEdit])
 
-  def list = ListEntry.findAll().map(("#entry *" #> _.asHtml))
-  def form(seq : NodeSeq )= {
-     logger.info("test");
+  def dispatch: DispatchIt   = {
+    case "addEntry" => addEntry _
+    case "showList" => list _
+  }
 
-    val todo = ListEntry.create
+  def list(seq : NodeSeq ):NodeSeq = {
+    ListEntry.findAll().flatMap(ent =>
+    bind("le", chooseTemplate("list", "entry", seq),
+      "text" -> Text(ent.text.is),
+      "delete" -> { SHtml.link("/", () => {ent.delete_!; S.notice("Entry deleted!")}, Text("X"))}))
+  }
 
-    def checkAndSave(): Unit =
-      todo.validate match {
-        case Nil => todo.save ; S.notice("Added "+todo.text.is)
-        case xs => S.error(xs) ; S.mapSnippet("ListEdit.form", doBind)
+  def prevalidate(entry: ListEntry): Boolean ={
+    val requiredFields = List((entry.text.is, "text"))
+
+    val missing = requiredFields.flatMap { case (field,label) =>
+      if (field.trim.length == 0) {
+        Some(label)
+      } else {
+        None
       }
+    }
 
-    def doBind(seq: NodeSeq) = todo.toForm(Full("Save"), checkAndSave)
+    if (! missing.isEmpty) {
+      missing.foreach { label =>
+        logger.error("Entry add attempted without " + label)
+        S.error("You must provide " + label)
+      }
+    }
+    missing.isEmpty
+  }
 
-    doBind(seq)
+  def add (t : String) = {
+    val e = ListEntry.create.text(t);
+    // Pre-validate the unparsed values
+    if (prevalidate(e)){
+    e.validate match {
+      case Nil => {
+        e.save()
+        S.notice("Entry added!")
+        this.unregisterThisSnippet() // dpp: remove the statefullness of this snippet
+        S.redirectTo("/")
+      }
+      case x => S.error(x)
+    }
+    }
+  }
+
+  def addEntry(in : NodeSeq )= {
+
+    bind("e", in,
+      "text" -%> SHtml.text("", add _ ))
   }
 
 }
