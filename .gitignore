@@ -166,9 +166,8 @@ pip-log.txt
 #compiled lift  stuff
 target
 *.iws
-
 *.ipr
-
 *.iml
-
 *.db
+.idea
+*.idea
